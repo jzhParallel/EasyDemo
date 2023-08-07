@@ -39,10 +39,12 @@ public class UserController {
     public Result register(@RequestBody LoginParam param) {
         String account = param.getAccount();
         String password = param.getPassword();
-        Integer registered = userService.register(account, password);
-        if (registered != null) {
-            return Result.success(registered);
+        try {
+            userService.register(account, password);
+        } catch (Exception e) {
+            System.out.println(e);
+            return Result.fail(502, "注册失败！");
         }
-        return Result.fail(502, "注册失败！");
+        return Result.success();
     }
 }

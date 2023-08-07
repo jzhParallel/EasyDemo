@@ -3,7 +3,6 @@ package com.jiangzhihong.java.easydemo.mapper;
 import com.jiangzhihong.java.easydemo.model.User;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 
 /**
@@ -20,6 +19,6 @@ public interface UserMapper {
     User selectByAccountAndPassword(String account, String password);
 
     @Insert("insert into ed_user(account,password) values(#{account},#{password}) ")
-    @Options(useGeneratedKeys = true, keyProperty = "uid")
-    int insertUser(String account, String password);
+        //@Options(useGeneratedKeys = true, keyProperty = "uid", keyColumn="uid")
+    void insertUser(String account, String password);
 }

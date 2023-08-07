@@ -12,5 +12,5 @@ public interface UserService {
 
     User login(String account, String password);
 
-    Integer register(String account, String password);
+    void register(String account, String password);
 }
