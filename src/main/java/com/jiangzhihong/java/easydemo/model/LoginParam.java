@@ -4,16 +4,12 @@ import lombok.Data;
 
 /**
  * @program: EasyDemo
- * @description: 用户类
+ * @description: 登录注册参数
  * @author: jiangzhihong
- * @create: 2023-08-06 09:36
+ * @create: 2023-08-07 15:20
  **/
-
 @Data
-public class User {
-
-    private Integer uid;
-
+public class LoginParam {
     private String account;
 
     private String password;
