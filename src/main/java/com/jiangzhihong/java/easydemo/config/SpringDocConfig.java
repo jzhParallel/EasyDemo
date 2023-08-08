@@ -20,7 +20,7 @@ public class SpringDocConfig {
         return new OpenAPI()
                 .info(new Info().title("EasyDemo-API接口文档")
                         .description("EasyDemo-API接口文档，随便看看不要当真")
-                        .contact(new Contact().name("蒋智鸿").email("601079657@QQ.com"))
+                        .contact(new Contact().name("被风吹散").email("601079657@QQ.com"))
                         .version("v0.0.2"));
     }
 }
