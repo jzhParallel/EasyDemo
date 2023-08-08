@@ -19,6 +19,7 @@ public interface UserMapper {
     User selectByAccountAndPassword(String account, String password);
 
     @Insert("insert into ed_user(account,password) values(#{account},#{password}) ")
-        //@Options(useGeneratedKeys = true, keyProperty = "uid", keyColumn="uid")
     void insertUser(String account, String password);
+
+
 }
