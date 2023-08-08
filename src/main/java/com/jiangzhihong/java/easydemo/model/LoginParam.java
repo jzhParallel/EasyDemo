@@ -1,5 +1,6 @@
 package com.jiangzhihong.java.easydemo.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -8,9 +9,13 @@ import lombok.Data;
  * @author: jiangzhihong
  * @create: 2023-08-07 15:20
  **/
+@Schema(description = "登录参数类")
 @Data
 public class LoginParam {
+
+    @Schema(description = "登录的账号")
     private String account;
 
+    @Schema(description = "输入的密码")
     private String password;
 }
