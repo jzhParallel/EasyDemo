@@ -13,9 +13,9 @@ import lombok.Data;
 @Data
 public class LoginParam {
 
-    @Schema(description = "登录的账号")
+    @Schema(description = "登录的账号", required = true)
     private String account;
 
-    @Schema(description = "输入的密码")
+    @Schema(description = "输入的密码", required = true)
     private String password;
 }
