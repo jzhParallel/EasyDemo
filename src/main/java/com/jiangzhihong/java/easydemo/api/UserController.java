@@ -1,15 +1,11 @@
 package com.jiangzhihong.java.easydemo.api;
 
+import com.jiangzhihong.java.easydemo.model.LoginParams;
 import com.jiangzhihong.java.easydemo.model.Result;
-import com.jiangzhihong.java.easydemo.model.params.LoginParams;
 import com.jiangzhihong.java.easydemo.model.vo.UserVo;
 import com.jiangzhihong.java.easydemo.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

@@ -11,7 +11,7 @@ import lombok.Data;
  **/
 @Schema(description = "登录参数类")
 @Data
-public class LoginParam {
+public class LoginParams {
 
     @Schema(description = "登录的账号", required = true)
     private String account;
