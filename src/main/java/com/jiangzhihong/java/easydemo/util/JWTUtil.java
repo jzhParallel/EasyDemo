@@ -20,7 +20,14 @@ import java.util.Map;
 public class JWTUtil {
     private static Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-    public static String createToken(Integer uid) {
+    /**
+     * 为用户id为uid的用户创建有效期为time毫秒的token
+     *
+     * @param uid
+     * @param time
+     * @return
+     */
+    public static String createToken(Integer uid, long time) {
         Map<String, Object> chain = new HashMap<String, Object>();
         chain.put("userId", uid);
         String token = Jwts.builder()
@@ -28,7 +35,7 @@ public class JWTUtil {
                 .signWith(key)//签发算法与密钥jwtToken
                 .setClaims(chain)//唯一的body数据
                 .setIssuedAt(new Date())//签发时间
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 10))//10天有效期
+                .setExpiration(new Date(System.currentTimeMillis() + time))
                 .compact();
         return token;
     }

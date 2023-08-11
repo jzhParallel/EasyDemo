@@ -1,19 +1,16 @@
 package com.jiangzhihong.java.easydemo.api;
 
-import com.jiangzhihong.java.easydemo.model.LoginParam;
 import com.jiangzhihong.java.easydemo.model.Result;
-import com.jiangzhihong.java.easydemo.model.User;
+import com.jiangzhihong.java.easydemo.model.params.LoginParams;
+import com.jiangzhihong.java.easydemo.model.vo.UserVo;
 import com.jiangzhihong.java.easydemo.service.UserService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
 /**
  * @program: EasyDemo
- * @description: 用户功能API接口 TODO
+ * @description: 用户功能API接口
  * @author: jiangzhihong
  * @create: 2023-08-07 14:00
  **/
@@ -25,10 +22,10 @@ public class UserController {
     UserService userService;
 
     @PostMapping("/login")
-    public Result login(@RequestBody LoginParam param) {
-        String account = param.getAccount();
-        String password = param.getPassword();
-        User logined = userService.login(account, password);
+    public Result login(@RequestBody LoginParams params) {
+        String account = params.getAccount();
+        String password = params.getPassword();
+        UserVo logined = userService.login(account, password);
         if (logined != null) {
             return Result.success(logined);
         }
@@ -36,15 +33,22 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public Result register(@RequestBody LoginParam param) {
-        String account = param.getAccount();
-        String password = param.getPassword();
-        try {
-            userService.register(account, password);
-        } catch (Exception e) {
-            System.out.println(e);
-            return Result.fail(502, "注册失败！");
+    public Result register(@RequestBody LoginParams params) {
+        String account = params.getAccount();
+        String password = params.getPassword();
+        UserVo registered = null;
+        registered = userService.register(account, password);
+        if (registered != null) {
+            return Result.success(registered);
         }
-        return Result.success();
+        return Result.fail(502, "注册失败！");
+    }
+
+
+    @PostMapping("/logout")
+    public Result logout(@RequestHeader("Authorization") String token) {
+        boolean flag = userService.logout(token);
+        if (flag) return Result.success();
+        else return Result.fail(503, "登出失败！");
     }
 }

@@ -1,4 +1,4 @@
-package com.jiangzhihong.java.easydemo.model;
+package com.jiangzhihong.java.easydemo.model.params;
 
 import lombok.Data;
 
@@ -9,7 +9,7 @@ import lombok.Data;
  * @create: 2023-08-07 15:20
  **/
 @Data
-public class LoginParam {
+public class LoginParams {
     private String account;
 
     private String password;
