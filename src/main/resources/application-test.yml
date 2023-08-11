@@ -10,7 +10,5 @@ spring:
     password: 123456
 
 path:
-  intercept:
-    - /api/**
-  exclude:
-    - /api/user/**
+  intercept: /api/**
+  exclude: /api/user/**

@@ -27,9 +27,10 @@ public class LoginInterceptor implements HandlerInterceptor {
         // 验证Token的有效性
         if (token == null) return false;
         Claims checkedToken = JWTUtil.checkToken(token);
+        if (checkedToken == null) return false;
         int uid = (int) checkedToken.get("userId");
         if (userMapper.selectByUid(uid) == null) return false;
-        System.out.print("已通过拦截器...");
+        System.out.print("uid为" + uid + "的用户请求已通过拦截器...");
         return true;
     }
 

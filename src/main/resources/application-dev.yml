@@ -10,7 +10,5 @@ spring:
     password: 123456
 
 path:
-  intercept:
-  #- /api/** #开发环境不进行拦截
-  exclude:
-    - /api/user/**
+  intercept: #/api/** #开发环境不进行拦截
+  exclude: /api/user/**

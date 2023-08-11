@@ -1,9 +1,6 @@
 package com.jiangzhihong.java.easydemo.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwt;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
 import java.security.Key;
@@ -42,9 +39,9 @@ public class JWTUtil {
 
     public static Claims checkToken(String token) {
         try {
-            Jwt parse = Jwts.parserBuilder()
+            Jwt<JwsHeader, Claims> parse = Jwts.parserBuilder()
                     .setSigningKey(key).build().parseClaimsJws(token);
-            return (Claims) parse.getBody();
+            return parse.getBody();
         } catch (Exception e) {
             System.out.println(e);
         }
