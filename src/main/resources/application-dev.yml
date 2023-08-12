@@ -8,3 +8,10 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: 123456
+
+#日志文件配置
+logging:
+  level:
+    root: debug
+  file:
+    path: log/dev/
