@@ -32,10 +32,8 @@ public class UserServiceImpl implements UserService {
      * 3.返回vo类
      */
     @Override
-    public User login(String account, String password) {
-        log.debug("用户登录中……账号是" + account);
-        return userMapper.selectByAccountAndPassword(account, password);
     public UserVo login(String account, String password) {
+        log.debug("用户登录中……账号是" + account);
         User user = userMapper.selectByAccountAndPassword(account, password);
         UserVo userVo = null;
         if (user != null) {
