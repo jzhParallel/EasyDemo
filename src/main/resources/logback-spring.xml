@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <!--     获取yml中的log地址 -->
+    <springProperty scope="context" name="logPath" source="logging.file.path"/>
+    <!--    获取yml中的log等级-->
+    <springProperty scope="context" name="logLevel" source="logging.level.root"/>
+
+    <!--    控制台输出-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%green(%d{yyyy-MM-dd HH:mm:ss}) %highlight(%-5level) [%magenta(%thread)] %boldMagenta(%logger{50})
+                : %cyan(%msg%n)
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!--    基础文件输出-->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        　
+        <file>${logPath}/basic.log</file>
+        <!--           追加方式记录日志 -->
+        　
+        <append>true</append>
+        　
+        <encoder>
+            　　　　
+            <pattern>%d{yyyy/MM/dd HH:mm:ss.SSS} %-5level [%thread] %logger{30}.%line : %msg%n</pattern>
+            　
+        </encoder>
+    </appender>
+
+    <!--RollingFileAppender继承自FileAppender，提供日志目标文件自动切换的功能。例如可以用日期作为日志分割的条件。
+        RollingFileAppender有两个重要属性，RollingPolicy负责怎么切换日志，TriggeringPolicy负责何时切换。-->
+    <appender name="ERROR-LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--指定输出文件名。-->
+        <file>${logPath}/error.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <!--            level可以添加多个等级，如果添加的等级名称错误，例如WARNING，就会输出所有的等级-->
+            <level>ERROR</level>
+            <level>WARN</level>
+        </filter>
+        <encoder>
+            <pattern>%d{yyyy/MM/dd HH:mm:ss.SSS} %-5level [%thread] %logger{30}.%line : %msg%n</pattern>
+        </encoder>
+        <!--TimeBasedRollingPolicy日志滚动策略,是基于时间的.包含一个必需属性fileNamePattern-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--决定了日志滚动时，归档日志的命名策略. 由文件名，以及一个%d转移符组成。-->
+            <fileNamePattern>${logPath}/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 归档日志最大保留时间 -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!--    root是基础的log，如果使用log的文件没有指定的logger就会调用root-->
+    <root level="${root.log.level}">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="ERROR-LOG"/>
+    </root>
+
+    <logger name="org.springframework" level="${logLevel}" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <!--        <appender-ref ref="FILE"/>-->
+    </logger>
+
+    <logger name="easydemo.aspect" level="${logLevel}" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="ERROR-LOG"/>
+    </logger>
+
+</configuration>

@@ -26,3 +26,9 @@ knife4j:
 path:
   intercept: #/api/** #开发环境不进行拦截
   exclude: /api/user/**
+#日志文件配置
+logging:
+  level:
+    root: debug
+  file:
+    path: log/dev/

@@ -6,6 +6,7 @@ import com.jiangzhihong.java.easydemo.model.vo.UserVo;
 import com.jiangzhihong.java.easydemo.service.UserService;
 import com.jiangzhihong.java.easydemo.util.JWTUtil;
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -17,6 +18,7 @@ import javax.annotation.Resource;
  * @create: 2023-08-06 10:23
  **/
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -30,6 +32,9 @@ public class UserServiceImpl implements UserService {
      * 3.返回vo类
      */
     @Override
+    public User login(String account, String password) {
+        log.debug("用户登录中……账号是" + account);
+        return userMapper.selectByAccountAndPassword(account, password);
     public UserVo login(String account, String password) {
         User user = userMapper.selectByAccountAndPassword(account, password);
         UserVo userVo = null;
