@@ -1,7 +1,7 @@
 package com.jiangzhihong.java.easydemo.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jiangzhihong.java.easydemo.model.User;
-import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -13,13 +13,9 @@ import org.apache.ibatis.annotations.Select;
  **/
 
 @Mapper
-public interface UserMapper {
+public interface UserMapper extends BaseMapper<User> {
 
     @Select("select uid,account,password from ed_user where account = #{account} and password = #{password}")
     User selectByAccountAndPassword(String account, String password);
-
-    @Insert("insert into ed_user(account,password) values(#{account},#{password}) ")
-    void insertUser(String account, String password);
-
 
 }

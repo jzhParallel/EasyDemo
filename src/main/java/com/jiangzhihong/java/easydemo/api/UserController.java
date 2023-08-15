@@ -4,12 +4,10 @@ import com.jiangzhihong.java.easydemo.model.LoginParam;
 import com.jiangzhihong.java.easydemo.model.Result;
 import com.jiangzhihong.java.easydemo.model.User;
 import com.jiangzhihong.java.easydemo.service.UserService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @program: EasyDemo
@@ -39,12 +37,21 @@ public class UserController {
     public Result register(@RequestBody LoginParam param) {
         String account = param.getAccount();
         String password = param.getPassword();
+        User user = new User();
+        user.setAccount(account);
+        user.setPassword(password);
         try {
-            userService.register(account, password);
+            userService.register(user);
         } catch (Exception e) {
             System.out.println(e);
             return Result.fail(502, "注册失败！");
         }
         return Result.success();
+    }
+
+    @GetMapping("/list")
+    public Result list(@RequestParam("current") int current, @RequestParam("size") int size) {
+        List<User> users = userService.listUserByPage(current, size);
+        return Result.success(users);
     }
 }

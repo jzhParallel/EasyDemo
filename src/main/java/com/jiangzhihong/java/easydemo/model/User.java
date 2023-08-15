@@ -1,5 +1,6 @@
 package com.jiangzhihong.java.easydemo.model;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
@@ -9,6 +10,7 @@ import lombok.Data;
  * @create: 2023-08-06 09:36
  **/
 
+@TableName("ed_user")
 @Data
 public class User {
 
