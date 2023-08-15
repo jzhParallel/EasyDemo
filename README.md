@@ -15,13 +15,13 @@ SpringBoot、Mybatis以及……
 
 ### 分支说明
 
-| 分支       | 主题        | 增加技术栈           | 特殊说明       |
-|----------|-----------|-----------------|------------|
-| master   |           | 持续更新中……         | 兼容所有已完成的模块 |
-| easydemo |           | 无               | 最基础的demo   |
-| swagger  | swagger文档 | swagger与knife4j |
-| token    | token令牌   | token           | 额外增加了登录拦截器 |
-
+| 分支       | 主题        | 增加技术栈           | 上流分支     | 特殊说明       |
+|----------|-----------|-----------------|----------|------------|
+| master   |           | 持续更新中……         | easydemo | 兼容所有已完成的模块 |
+| easydemo |           | 无               |          | 最基础的demo   |
+| swagger  | swagger文档 | swagger与knife4j | easydemo |
+| token    | token令牌   | token           | easydemo | 额外增加了登录拦截器 |
+| redis    | redis数据库  | redis           | token    |            |
 ***
 
 # Getting Started With EasyDemo!
