@@ -1,14 +1,19 @@
 package com.jiangzhihong.java.easydemo.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.jiangzhihong.java.easydemo.mapper.UserMapper;
 import com.jiangzhihong.java.easydemo.model.User;
 import com.jiangzhihong.java.easydemo.model.vo.UserVo;
 import com.jiangzhihong.java.easydemo.service.UserService;
 import com.jiangzhihong.java.easydemo.util.JWTUtil;
+import com.jiangzhihong.java.easydemo.util.StringUtil;
 import io.jsonwebtoken.Claims;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @program: EasyDemo
@@ -23,11 +28,18 @@ public class UserServiceImpl implements UserService {
     @Resource
     UserMapper userMapper;
 
+    @Resource
+    private RedisTemplate<String, String> redisTemplate;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
     /**
      * 登录流程：
      * 1.查找账密匹配的用户
      * 2.设置token
-     * 3.返回vo类
+     * 3.将token和user对象以kv类型存入redis
+     * 4.返回vo类
      */
     @Override
     public UserVo login(String account, String password) {
@@ -36,7 +48,9 @@ public class UserServiceImpl implements UserService {
         if (user != null) {
             userVo = new UserVo();
             userVo.setAccount(user.getAccount());
-            userVo.setToken(JWTUtil.createToken(user.getUid(), 1000 * 60 * 60 * 24));//token有效期一天
+            String token = JWTUtil.createToken(user.getUid(), 1000 * 60 * 60 * 24);//token有效期一天
+            userVo.setToken(token);
+            redisTemplate.opsForValue().set("TOKEN_" + token, JSON.toJSONString(user), 1, TimeUnit.DAYS);//有效期一天的token在redis中也存一天
         }
         return userVo;
     }
@@ -45,7 +59,8 @@ public class UserServiceImpl implements UserService {
      * 登录流程：
      * 1.新增用户
      * 2.设置token
-     * 3.返回vo类
+     * 3.将token和user对象以kv类型存入redis
+     * 4.返回vo类
      */
     @Override
     public UserVo register(String account, String password) {
@@ -60,23 +75,24 @@ public class UserServiceImpl implements UserService {
         }
         UserVo userVo = new UserVo();
         userVo.setAccount(user.getAccount());
-        userVo.setToken(JWTUtil.createToken(user.getUid(), 1000 * 60 * 60 * 24));//token有效期一天
+        String token = JWTUtil.createToken(user.getUid(), 1000 * 60 * 60 * 24);//token有效期一天
+        userVo.setToken(token);
+        redisTemplate.opsForValue().set("TOKEN_" + token, JSON.toJSONString(user), 1, TimeUnit.DAYS);//有效期一天的token在redis中也存一天
         return userVo;
     }
 
     /**
-     * 登入登出功能需要在数据库中记录状态
-     * 如果每次登录登出都在MySQL数据库中写数据，可能会导致程序响应速度慢的问题
-     * 一般的做法是在redis中记录用户相关的token，登入时加入、登出时山粗
-     * 如果需要完整的登入登出代码，请参照redis分支或者finalLogin分支
+     * 登出流程：
+     * 1. 先检查token是否合法，不合法就返回false表示token错误
+     * 2. 如果token合法则删除redis中的token，表示登出成功
      */
     @Override
     public boolean logout(String token) {
-        Claims checkedToken = JWTUtil.checkToken(token);
-        if (checkedToken == null) return false;
-        int uid = (int) checkedToken.get("userId");
-        User user = userMapper.selectByUid(uid);
-        if (user == null) return false;
-        else return true;
+        if (StringUtil.isBlank(token)) return false;
+        Claims claims = JWTUtil.checkToken(token);
+        if (claims == null) return false;
+        //删除redis中的token，表示退出成功
+        redisTemplate.delete("TOKEN_" + token);
+        return true;
     }
 }
