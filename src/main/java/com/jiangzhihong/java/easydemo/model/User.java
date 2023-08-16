@@ -1,6 +1,8 @@
 package com.jiangzhihong.java.easydemo.model;
 
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import lombok.Data;
 
 /**
@@ -10,7 +12,7 @@ import lombok.Data;
  * @create: 2023-08-06 09:36
  **/
 
-@TableName("ed_user")
+@TableName("user")
 @Data
 public class User {
 
@@ -19,4 +21,10 @@ public class User {
     private String account;
 
     private String password;
+
+    @TableLogic(value = "0", delval = "1")
+    private int deleted;
+
+    @Version
+    private int version;
 }

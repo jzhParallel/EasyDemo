@@ -17,4 +17,6 @@ public interface UserService {
     void register(User user);
 
     List<User> listUserByPage(int current, int size);
+
+    boolean delete(int uid);
 }
