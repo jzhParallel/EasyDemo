@@ -12,6 +12,8 @@ import lombok.Data;
 @Data
 public class UserVo {
 
+    private Long uid;
+
     private String account;
 
     private String token;
