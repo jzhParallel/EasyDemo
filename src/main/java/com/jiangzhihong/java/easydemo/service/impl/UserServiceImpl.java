@@ -2,7 +2,9 @@ package com.jiangzhihong.java.easydemo.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.jiangzhihong.java.easydemo.mapper.UserMapper;
+import com.jiangzhihong.java.easydemo.model.ErrorCode;
 import com.jiangzhihong.java.easydemo.model.User;
 import com.jiangzhihong.java.easydemo.model.entity.UserEntity;
 import com.jiangzhihong.java.easydemo.model.vo.UserVo;
@@ -17,6 +19,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -125,5 +128,51 @@ public class UserServiceImpl implements UserService {
         BeanUtils.copyProperties(user, userVo);
         log.debug("当前用户{}", user.getAccount());
         return userVo;
+    }
+
+    /**
+     * 用户信息改变流程
+     * 1.检验token是否合法，不合法就返回未登录错误
+     * 2.将要修改的信息放入从redis中获取的user，并据此更新user
+     * 3.修改成功返回1，不成功返回0
+     */
+    @Override
+    public int update(User change, String token) {
+        String userStr = redisTemplate.opsForValue().get("TOKEN_" + token);
+        if (StringUtil.isBlank(userStr)) return ErrorCode.NO_LOGIN.getCode();
+        User user = JSON.parseObject(userStr, User.class);
+        //这里通过反射遍历change中不为空的字段并放入user
+        Field[] fields = change.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            field.setAccessible(true);
+            try {
+                Object o = field.get(change);
+                if (o != null) field.set(user, o);
+            } catch (IllegalAccessException e) {
+                log.error("【用户服务】-【更改用户信息】发生错误,{}", e.getMessage());
+            }
+        }
+        UserEntity userEntity = new UserEntity();
+        BeanUtils.copyProperties(user, userEntity);
+        LambdaUpdateWrapper<UserEntity> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(UserEntity::getUid, userEntity.getUid());
+        return userMapper.update(userEntity, wrapper);
+    }
+
+    /**
+     * 用户注销流程
+     * 1.检验token是否合法，不合法就返回未登录错误
+     * 2.根据从redis中获取的user校验密码，不正确则返回密码错误
+     * 3.正常注销返回1，未注销返回0
+     */
+    @Override
+    public int ban(String token, String password) {
+        String userStr = redisTemplate.opsForValue().get("TOKEN_" + token);
+        if (StringUtil.isBlank(userStr)) return ErrorCode.NO_LOGIN.getCode();
+        User user = JSON.parseObject(userStr, User.class);
+        if (!user.getPassword().equals(password)) return ErrorCode.PASSWORD_ERROR.getCode();
+        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserEntity::getUid, user.getUid());
+        return userMapper.delete(wrapper);
     }
 }

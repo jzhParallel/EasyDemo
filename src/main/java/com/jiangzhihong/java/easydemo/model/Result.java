@@ -43,6 +43,7 @@ public class Result {
     }
 
     public static Result fail(ErrorCode errorCode) {
+        if (errorCode == null) errorCode = ErrorCode.SPECIAL_ERROR;
         return fail(errorCode.getCode(), errorCode.getMsg());
     }
 }

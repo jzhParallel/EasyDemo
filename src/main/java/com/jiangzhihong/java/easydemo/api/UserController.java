@@ -3,11 +3,14 @@ package com.jiangzhihong.java.easydemo.api;
 import com.jiangzhihong.java.easydemo.model.ErrorCode;
 import com.jiangzhihong.java.easydemo.model.LoginParams;
 import com.jiangzhihong.java.easydemo.model.Result;
+import com.jiangzhihong.java.easydemo.model.User;
+import com.jiangzhihong.java.easydemo.model.params.UpdateUserParams;
 import com.jiangzhihong.java.easydemo.model.vo.UserVo;
 import com.jiangzhihong.java.easydemo.service.UserService;
 import com.jiangzhihong.java.easydemo.util.StringUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.BeanUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,5 +75,23 @@ public class UserController {
         UserVo current = userService.current(token);
         if (current != null) return Result.success(current);
         else return Result.fail(ErrorCode.NO_LOGIN);
+    }
+
+    @PostMapping("/update")
+    public Result updateUser(@RequestBody UpdateUserParams params, @RequestHeader("Authorization") String token) {
+        User change = new User();
+        BeanUtils.copyProperties(params, change);
+        int result = userService.update(change, token);
+        if (result == 1) return Result.success();
+        else if (result == 0) return Result.fail(ErrorCode.INVALID_OPERATION);
+        else return Result.fail(ErrorCode.convert(result));
+    }
+
+    @PostMapping("/ban")
+    public Result banUser(@RequestHeader("Authorization") String token, @PathVariable String password) {
+        int result = userService.ban(token, password);
+        if (result == 1) return Result.success();
+        else if (result == 0) return Result.fail(ErrorCode.INVALID_OPERATION);
+        else return Result.fail(ErrorCode.convert(result));
     }
 }

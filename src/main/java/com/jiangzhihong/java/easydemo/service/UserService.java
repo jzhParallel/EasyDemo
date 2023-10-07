@@ -1,5 +1,6 @@
 package com.jiangzhihong.java.easydemo.service;
 
+import com.jiangzhihong.java.easydemo.model.User;
 import com.jiangzhihong.java.easydemo.model.vo.UserVo;
 
 /**
@@ -17,4 +18,8 @@ public interface UserService {
     boolean logout(String token);
 
     UserVo current(String token);
+
+    int update(User user, String token);
+
+    int ban(String token, String password);
 }

@@ -4,7 +4,7 @@ import lombok.Data;
 
 /**
  * @program: EasyDemo
- * @description: 用户vo类 TODO
+ * @description: 用户vo类
  * @author: jiangzhihong
  * @create: 2023-08-10 10:01
  **/
