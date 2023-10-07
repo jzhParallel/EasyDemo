@@ -58,6 +58,7 @@ public class UserServiceImpl implements UserService {
             String token = JWTUtil.createToken(user.getUid(), 1000 * 60 * 60 * 24);//token有效期一天
             userVo.setToken(token);
             redisTemplate.opsForValue().set("TOKEN_" + token, JSON.toJSONString(user), 1, TimeUnit.DAYS);//有效期一天的token在redis中也存一天
+            log.debug("用户{}登录成功", account);
         }
         return userVo;
     }
@@ -71,6 +72,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserVo register(String account, String password) {
+        log.debug("用户{}注册中……", account);
         User user = new User();
         user.setAccount(account);
         user.setPassword(password);
@@ -80,6 +82,7 @@ public class UserServiceImpl implements UserService {
             userMapper.insertUser(userEntity);
         } catch (Exception e) {
             //出现问题就捕捉返回空值，目的是减少插入前查询的步骤。逻辑上是针对account列的唯一性约束，然而也可能发生其他错误。这是偷懒的做法，不推荐。
+            log.error("用户{}注册失败：{}", account, e.getMessage());
             return null;
         }
         UserVo userVo = new UserVo();
@@ -87,6 +90,7 @@ public class UserServiceImpl implements UserService {
         String token = JWTUtil.createToken(user.getUid(), 1000 * 60 * 60 * 24);//token有效期一天
         userVo.setToken(token);
         redisTemplate.opsForValue().set("TOKEN_" + token, JSON.toJSONString(user), 1, TimeUnit.DAYS);//有效期一天的token在redis中也存一天
+        log.debug("用户{}注册成功", account);
         return userVo;
     }
 
@@ -101,6 +105,8 @@ public class UserServiceImpl implements UserService {
         if (claims == null) return false;
         //删除redis中的token，表示退出成功
         redisTemplate.delete("TOKEN_" + token);
+        Long id = (Long) claims.get("userId");
+        log.debug("用户id:{}的用户登出成功", id);
         return true;
     }
 
@@ -113,6 +119,7 @@ public class UserServiceImpl implements UserService {
         User user = JSON.parseObject(userStr, User.class);
         UserVo userVo = new UserVo();
         BeanUtils.copyProperties(user, userVo);
+        log.debug("当前用户{}", user.getAccount());
         return userVo;
     }
 }
