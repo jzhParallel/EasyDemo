@@ -2,7 +2,10 @@ package com.jiangzhihong.java.easydemo.handle;
 
 import com.jiangzhihong.java.easydemo.mapper.UserMapper;
 import com.jiangzhihong.java.easydemo.util.JWTUtil;
+import com.jiangzhihong.java.easydemo.util.StringUtil;
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -16,21 +19,27 @@ import javax.servlet.http.HttpServletResponse;
  * @author: jiangzhihong
  * @create: 2023-08-11 14:25
  **/
+
+@Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
 
     @Resource
     private UserMapper userMapper;
 
+    @Resource
+    private RedisTemplate<String, String> redisTemplate;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String token = request.getHeader("Authorization");
         // 验证Token的有效性
-        if (token == null) return false;
+        if (StringUtil.isBlank(token)) return false;
         Claims checkedToken = JWTUtil.checkToken(token);
         if (checkedToken == null) return false;
-        int uid = (int) checkedToken.get("userId");
-        if (userMapper.selectByUid(uid) == null) return false;
-        System.out.print("uid为" + uid + "的用户请求已通过拦截器...");
+        Long uid = (Long) checkedToken.get("userId");
+        String userStr = redisTemplate.opsForValue().get("TOKEN_" + token);
+        if (StringUtil.isBlank(userStr)) return false;
+        log.debug("【登陆拦截器】uid为{}的用户请求已通过拦截器...", uid);
         return true;
     }
 

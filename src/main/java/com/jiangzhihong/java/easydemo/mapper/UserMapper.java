@@ -17,7 +17,7 @@ import org.apache.ibatis.annotations.Select;
 public interface UserMapper {
 
     @Select("select uid,account,password from ed_user where uid = #{uid}")
-    UserEntity selectByUid(int uid);
+    UserEntity selectByUid(long uid);
 
     @Select("select uid,account,password from ed_user where account = #{account} and password = #{password}")
     UserEntity selectByAccountAndPassword(String account, String password);
