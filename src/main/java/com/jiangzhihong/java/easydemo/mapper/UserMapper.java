@@ -1,6 +1,6 @@
 package com.jiangzhihong.java.easydemo.mapper;
 
-import com.jiangzhihong.java.easydemo.model.User;
+import com.jiangzhihong.java.easydemo.model.entity.UserEntity;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -17,14 +17,14 @@ import org.apache.ibatis.annotations.Select;
 public interface UserMapper {
 
     @Select("select uid,account,password from ed_user where uid = #{uid}")
-    User selectByUid(int uid);
+    UserEntity selectByUid(int uid);
 
     @Select("select uid,account,password from ed_user where account = #{account} and password = #{password}")
-    User selectByAccountAndPassword(String account, String password);
+    UserEntity selectByAccountAndPassword(String account, String password);
 
     @Insert("insert into ed_user(account,password) values(#{account},#{password}) ")
     @Options(useGeneratedKeys = true, keyProperty = "uid", keyColumn = "uid")
-    void insertUser(User user);
+    void insertUser(UserEntity user);
 
 
 }

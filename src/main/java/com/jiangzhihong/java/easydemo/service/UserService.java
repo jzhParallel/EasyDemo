@@ -15,4 +15,6 @@ public interface UserService {
     UserVo register(String account, String password);
 
     boolean logout(String token);
+
+    UserVo current(String token);
 }

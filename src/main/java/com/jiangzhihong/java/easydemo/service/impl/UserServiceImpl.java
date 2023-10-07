@@ -3,12 +3,14 @@ package com.jiangzhihong.java.easydemo.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.jiangzhihong.java.easydemo.mapper.UserMapper;
 import com.jiangzhihong.java.easydemo.model.User;
+import com.jiangzhihong.java.easydemo.model.entity.UserEntity;
 import com.jiangzhihong.java.easydemo.model.vo.UserVo;
 import com.jiangzhihong.java.easydemo.service.UserService;
 import com.jiangzhihong.java.easydemo.util.JWTUtil;
 import com.jiangzhihong.java.easydemo.util.StringUtil;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -45,12 +47,14 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserVo login(String account, String password) {
-        log.debug("用户登录中……账号是" + account);
-        User user = userMapper.selectByAccountAndPassword(account, password);
+        log.debug("用户{}登录中……", account);
+        UserEntity userEntity = userMapper.selectByAccountAndPassword(account, password);
         UserVo userVo = null;
-        if (user != null) {
+        if (userEntity != null) {
+            User user = new User();
+            BeanUtils.copyProperties(userEntity, user);
             userVo = new UserVo();
-            userVo.setAccount(user.getAccount());
+            BeanUtils.copyProperties(user, userVo);
             String token = JWTUtil.createToken(user.getUid(), 1000 * 60 * 60 * 24);//token有效期一天
             userVo.setToken(token);
             redisTemplate.opsForValue().set("TOKEN_" + token, JSON.toJSONString(user), 1, TimeUnit.DAYS);//有效期一天的token在redis中也存一天
@@ -70,14 +74,16 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setAccount(account);
         user.setPassword(password);
+        UserEntity userEntity = new UserEntity();
+        BeanUtils.copyProperties(user, userEntity);
         try {
-            userMapper.insertUser(user);
+            userMapper.insertUser(userEntity);
         } catch (Exception e) {
             //出现问题就捕捉返回空值，目的是减少插入前查询的步骤。逻辑上是针对account列的唯一性约束，然而也可能发生其他错误。这是偷懒的做法，不推荐。
             return null;
         }
         UserVo userVo = new UserVo();
-        userVo.setAccount(user.getAccount());
+        BeanUtils.copyProperties(user, userVo);
         String token = JWTUtil.createToken(user.getUid(), 1000 * 60 * 60 * 24);//token有效期一天
         userVo.setToken(token);
         redisTemplate.opsForValue().set("TOKEN_" + token, JSON.toJSONString(user), 1, TimeUnit.DAYS);//有效期一天的token在redis中也存一天
@@ -91,11 +97,22 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public boolean logout(String token) {
-        if (StringUtil.isBlank(token)) return false;
         Claims claims = JWTUtil.checkToken(token);
         if (claims == null) return false;
         //删除redis中的token，表示退出成功
         redisTemplate.delete("TOKEN_" + token);
         return true;
+    }
+
+    @Override
+    public UserVo current(String token) {
+        Claims claims = JWTUtil.checkToken(token);
+        if (claims == null) return null;
+        String userStr = redisTemplate.opsForValue().get("TOKEN_" + token);
+        if (StringUtil.isBlank(userStr)) return null;
+        User user = JSON.parseObject(userStr, User.class);
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(user, userVo);
+        return userVo;
     }
 }

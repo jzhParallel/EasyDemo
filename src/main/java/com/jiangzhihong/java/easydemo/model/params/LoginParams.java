@@ -3,6 +3,8 @@ package com.jiangzhihong.java.easydemo.model;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * @program: EasyDemo
  * @description: 登录注册参数
@@ -14,8 +16,10 @@ import lombok.Data;
 public class LoginParams {
 
     @Schema(description = "登录的账号", required = true)
+    @NotNull
     private String account;
 
     @Schema(description = "输入的密码", required = true)
+    @NotNull
     private String password;
 }

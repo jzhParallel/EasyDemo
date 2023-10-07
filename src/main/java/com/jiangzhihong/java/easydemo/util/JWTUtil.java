@@ -24,7 +24,7 @@ public class JWTUtil {
      * @param time
      * @return
      */
-    public static String createToken(Integer uid, long time) {
+    public static String createToken(Long uid, long time) {
         Map<String, Object> chain = new HashMap<String, Object>();
         chain.put("userId", uid);
         String token = Jwts.builder()
@@ -47,4 +47,5 @@ public class JWTUtil {
         }
         return null;
     }
+    //获得Claims后 Long id = (Long) claims.get("userId");
 }

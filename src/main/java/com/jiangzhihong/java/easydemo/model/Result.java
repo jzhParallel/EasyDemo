@@ -42,4 +42,7 @@ public class Result {
         return new Result(false, code, msg, null);
     }
 
+    public static Result fail(ErrorCode errorCode) {
+        return fail(errorCode.getCode(), errorCode.getMsg());
+    }
 }

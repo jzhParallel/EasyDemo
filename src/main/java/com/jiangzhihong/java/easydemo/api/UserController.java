@@ -1,14 +1,18 @@
 package com.jiangzhihong.java.easydemo.api;
 
+import com.jiangzhihong.java.easydemo.model.ErrorCode;
 import com.jiangzhihong.java.easydemo.model.LoginParams;
 import com.jiangzhihong.java.easydemo.model.Result;
 import com.jiangzhihong.java.easydemo.model.vo.UserVo;
 import com.jiangzhihong.java.easydemo.service.UserService;
+import com.jiangzhihong.java.easydemo.util.StringUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 /**
  * @program: EasyDemo
@@ -29,34 +33,44 @@ public class UserController {
 //            @ApiResponse(responseCode = "400",description = "Bad Request")
 //    )
     @PostMapping("/login")
-    public Result login(@RequestBody LoginParams params) {
+    public Result login(@RequestBody @Valid LoginParams params, BindingResult errors) {
+        if (errors != null) return Result.fail(ErrorCode.VALID_ERROR);
         String account = params.getAccount();
         String password = params.getPassword();
         UserVo logined = userService.login(account, password);
         if (logined != null) {
             return Result.success(logined);
         }
-        return Result.fail(501, "登录失败！");
+        return Result.fail(ErrorCode.LOGIN_ERROR);
     }
 
     @Operation(summary = "register", description = "用户注册接口，采用账号密码注册", method = "POST")
     @PostMapping("/register")
-    public Result register(@RequestBody LoginParams params) {
+    public Result register(@RequestBody @Valid LoginParams params, BindingResult errors) {
+        if (errors != null) return Result.fail(ErrorCode.VALID_ERROR);
         String account = params.getAccount();
         String password = params.getPassword();
-        UserVo registered = null;
-        registered = userService.register(account, password);
+        UserVo registered = userService.register(account, password);
         if (registered != null) {
             return Result.success(registered);
         }
-        return Result.fail(502, "注册失败！");
+        return Result.fail(ErrorCode.REGISTER_ERROR);
     }
 
 
     @PostMapping("/logout")
     public Result logout(@RequestHeader("Authorization") String token) {
+        if (StringUtil.isBlank(token)) return Result.fail(ErrorCode.NOT_EMPTY);
         boolean flag = userService.logout(token);
         if (flag) return Result.success();
-        else return Result.fail(503, "登出失败！");
+        else return Result.fail(ErrorCode.LOGOUT_ERROR);
+    }
+
+    @PostMapping("/current")
+    public Result currentUser(@RequestHeader("Authorization") String token) {
+        if (StringUtil.isBlank(token)) return Result.fail(ErrorCode.NOT_EMPTY);
+        UserVo current = userService.current(token);
+        if (current != null) return Result.success(current);
+        else return Result.fail(ErrorCode.NO_LOGIN);
     }
 }
