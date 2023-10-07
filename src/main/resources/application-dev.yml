@@ -54,6 +54,12 @@ logging:
     path: log/dev/
 
 mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #开发环境开启控制台日志
   global-config:
     db-config:
-      table-prefix: edm_
+      id-type: auto
+      table-prefix: ed_
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
