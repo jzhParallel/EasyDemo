@@ -1,7 +1,7 @@
 package com.jiangzhihong.java.easydemo.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.jiangzhihong.java.easydemo.model.User;
+import com.jiangzhihong.java.easydemo.model.entity.UserEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -12,6 +12,6 @@ import org.apache.ibatis.annotations.Mapper;
  **/
 
 @Mapper
-public interface UserMapper extends BaseMapper<User> {
+public interface UserMapper extends BaseMapper<UserEntity> {
 
 }

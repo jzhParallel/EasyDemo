@@ -17,8 +17,8 @@ import lombok.Data;
 @Data
 public class UserEntity {
 
-    //主键自增
-    @TableId(type = IdType.AUTO)
+    //主键采用雪花id
+    @TableId(type = IdType.ASSIGN_ID)
     private Long uid;
 
     private String name;

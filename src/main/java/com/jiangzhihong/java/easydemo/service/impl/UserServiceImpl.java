@@ -1,6 +1,7 @@
 package com.jiangzhihong.java.easydemo.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jiangzhihong.java.easydemo.mapper.UserMapper;
 import com.jiangzhihong.java.easydemo.model.User;
 import com.jiangzhihong.java.easydemo.model.entity.UserEntity;
@@ -48,7 +49,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserVo login(String account, String password) {
         log.debug("用户{}登录中……", account);
-        UserEntity userEntity = userMapper.selectByAccountAndPassword(account, password);
+        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserEntity::getAccount, account);
+        wrapper.eq(UserEntity::getPassword, password);
+        UserEntity userEntity = userMapper.selectOne(wrapper);
         UserVo userVo = null;
         if (userEntity != null) {
             User user = new User();
@@ -79,7 +83,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = new UserEntity();
         BeanUtils.copyProperties(user, userEntity);
         try {
-            userMapper.insertUser(userEntity);
+            userMapper.insert(userEntity);
         } catch (Exception e) {
             //出现问题就捕捉返回空值，目的是减少插入前查询的步骤。逻辑上是针对account列的唯一性约束，然而也可能发生其他错误。这是偷懒的做法，不推荐。
             log.error("用户{}注册失败：{}", account, e.getMessage());
