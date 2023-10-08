@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserVo login(String account, String password) {
-        log.debug("用户{}登录中……", account);
+        log.debug("【用户服务】-【用户登录】用户{}登录中……", account);
         LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserEntity::getAccount, account);
         wrapper.eq(UserEntity::getPassword, password);
@@ -62,10 +62,12 @@ public class UserServiceImpl implements UserService {
             BeanUtils.copyProperties(userEntity, user);
             userVo = new UserVo();
             BeanUtils.copyProperties(user, userVo);
-            String token = JWTUtil.createToken(user.getUid(), 1000 * 60 * 60 * 24);//token有效期一天
+            String token = JWTUtil.createToken(user.getUid(), account, 1000 * 60 * 60 * 24);//token有效期一天
             userVo.setToken(token);
             redisTemplate.opsForValue().set("TOKEN_" + token, JSON.toJSONString(user), 1, TimeUnit.DAYS);//有效期一天的token在redis中也存一天
-            log.debug("用户{}登录成功", account);
+            log.debug("【用户服务】-【用户登录】用户{}登录成功", account);
+        } else {
+            log.debug("【用户服务】-【用户登录】用户{}登录失败", account);
         }
         return userVo;
     }
@@ -79,7 +81,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserVo register(String account, String password) {
-        log.debug("用户{}注册中……", account);
+        log.debug("【用户服务】-【用户注册】用户{}注册中……", account);
         User user = new User();
         user.setAccount(account);
         user.setPassword(password);
@@ -89,15 +91,15 @@ public class UserServiceImpl implements UserService {
             userMapper.insert(userEntity);
         } catch (Exception e) {
             //出现问题就捕捉返回空值，目的是减少插入前查询的步骤。逻辑上是针对account列的唯一性约束，然而也可能发生其他错误。这是偷懒的做法，不推荐。
-            log.error("用户{}注册失败：{}", account, e.getMessage());
+            log.error("【用户服务】-【用户注册】用户{}注册失败：{}", account, e.getMessage());
             return null;
         }
         UserVo userVo = new UserVo();
         BeanUtils.copyProperties(user, userVo);
-        String token = JWTUtil.createToken(user.getUid(), 1000 * 60 * 60 * 24);//token有效期一天
+        String token = JWTUtil.createToken(user.getUid(), account, 1000 * 60 * 60 * 24);//token有效期一天
         userVo.setToken(token);
         redisTemplate.opsForValue().set("TOKEN_" + token, JSON.toJSONString(user), 1, TimeUnit.DAYS);//有效期一天的token在redis中也存一天
-        log.debug("用户{}注册成功", account);
+        log.debug("【用户服务】-【用户注册】用户{}注册成功", account);
         return userVo;
     }
 
@@ -109,24 +111,31 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean logout(String token) {
         Claims claims = JWTUtil.checkToken(token);
-        if (claims == null) return false;
+        if (claims == null) {
+            log.debug("【用户服务】-【用户登出】识别用户信息失败——token无效");
+            return false;
+        }
         //删除redis中的token，表示退出成功
         redisTemplate.delete("TOKEN_" + token);
-        Long id = (Long) claims.get("userId");
-        log.debug("用户id:{}的用户登出成功", id);
+        //Long id = (Long) claims.get("userId");
+        String account = (String) claims.get("account");
+        log.debug("【用户服务】-【用户登出】用户{}登出成功", account);
         return true;
     }
 
     @Override
     public UserVo current(String token) {
         Claims claims = JWTUtil.checkToken(token);
-        if (claims == null) return null;
+        if (claims == null) {
+            log.debug("【用户服务】-【当前用户】识别用户信息失败——token无效");
+            return null;
+        }
         String userStr = redisTemplate.opsForValue().get("TOKEN_" + token);
         if (StringUtil.isBlank(userStr)) return null;
         User user = JSON.parseObject(userStr, User.class);
         UserVo userVo = new UserVo();
         BeanUtils.copyProperties(user, userVo);
-        log.debug("当前用户{}", user.getAccount());
+        log.debug("【用户服务】-【当前用户】当前用户{}", user.getAccount());
         return userVo;
     }
 
@@ -139,7 +148,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public int update(User change, String token) {
         String userStr = redisTemplate.opsForValue().get("TOKEN_" + token);
-        if (StringUtil.isBlank(userStr)) return ErrorCode.NO_LOGIN.getCode();
+        if (StringUtil.isBlank(userStr)) {
+            log.debug("【用户服务】-【更改用户信息】识别用户信息失败——token无效或登录已过期");
+            return ErrorCode.NO_LOGIN.getCode();
+        }
         User user = JSON.parseObject(userStr, User.class);
         //这里通过反射遍历change中不为空的字段并放入user
         Field[] fields = change.getClass().getDeclaredFields();
@@ -156,7 +168,9 @@ public class UserServiceImpl implements UserService {
         BeanUtils.copyProperties(user, userEntity);
         LambdaUpdateWrapper<UserEntity> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(UserEntity::getUid, userEntity.getUid());
-        return userMapper.update(userEntity, wrapper);
+        int changeLineNum = userMapper.update(userEntity, wrapper);
+        log.debug("【用户服务】-【更改用户信息】更改用户信息操作完成，影响{}行数据", changeLineNum);
+        return changeLineNum;
     }
 
     /**
@@ -168,11 +182,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public int ban(String token, String password) {
         String userStr = redisTemplate.opsForValue().get("TOKEN_" + token);
-        if (StringUtil.isBlank(userStr)) return ErrorCode.NO_LOGIN.getCode();
+        if (StringUtil.isBlank(userStr)) {
+            log.debug("【用户服务】-【用户注销】识别用户信息失败——token无效或登录已过期");
+            return ErrorCode.NO_LOGIN.getCode();
+        }
         User user = JSON.parseObject(userStr, User.class);
-        if (!user.getPassword().equals(password)) return ErrorCode.PASSWORD_ERROR.getCode();
+        if (!user.getPassword().equals(password)) {
+            log.debug("【用户服务】-【用户注销】用户验证失败——密码不正确");
+            return ErrorCode.PASSWORD_ERROR.getCode();
+        }
         LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserEntity::getUid, user.getUid());
-        return userMapper.delete(wrapper);
+        int changeLineNum = userMapper.delete(wrapper);
+        log.debug("【用户服务】-【用户注销】更改用户信息操作完成，影响{}行数据", changeLineNum);
+        return changeLineNum;
     }
 }

@@ -24,9 +24,10 @@ public class JWTUtil {
      * @param time
      * @return
      */
-    public static String createToken(Long uid, long time) {
+    public static String createToken(Long uid, String account, long time) {
         Map<String, Object> chain = new HashMap<String, Object>();
         chain.put("userId", uid);
+        chain.put("account", account);
         String token = Jwts.builder()
                 //.setSubject("用于认证的token")//设置主题
                 .signWith(key)//签发算法与密钥jwtToken
