@@ -58,6 +58,10 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userMapper.selectOne(wrapper);
         UserVo userVo = null;
         if (userEntity != null) {
+            if (userEntity.getDeleted() == 1) {
+                log.debug("【用户服务】-【用户登录】用户{}登录失败——账户已注销", account);
+                return null;
+            }
             User user = new User();
             BeanUtils.copyProperties(userEntity, user);
             userVo = new UserVo();
